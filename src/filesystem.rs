@@ -207,7 +207,9 @@ impl MapFileStore<WithPathMap> {
             self.new_source_id(path.to_path_buf(), content);
         }
     }
+}
 
+impl<T: PathMap> MapFileStore<T> {
     #[cfg(feature = "codespan-reporting")]
     pub fn into_code_span_store(&self) -> CodeSpanStore {
         CodeSpanStore(self)
@@ -215,10 +217,13 @@ impl MapFileStore<WithPathMap> {
 }
 
 #[cfg(feature = "codespan-reporting")]
-pub struct CodeSpanStore<'a>(&'a MapFileStore<WithPathMap>);
+pub struct CodeSpanStore<'a, T>(&'a MapFileStore<T>);
 
 #[cfg(feature = "codespan-reporting")]
-impl<'a> codespan_reporting::files::Files<'a> for CodeSpanStore<'a> {
+impl<'a, T> codespan_reporting::files::Files<'a> for CodeSpanStore<'a, T>
+where
+    T: PathMap,
+{
     type FileId = SourceId;
     type Name = String;
     type Source = &'a str;
