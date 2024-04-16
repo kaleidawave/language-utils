@@ -211,7 +211,7 @@ impl MapFileStore<WithPathMap> {
 
 impl<T: PathMap> MapFileStore<T> {
     #[cfg(feature = "codespan-reporting")]
-    pub fn into_code_span_store(&self) -> CodeSpanStore {
+    pub fn into_code_span_store(&self) -> CodeSpanStore<T> {
         CodeSpanStore(self)
     }
 }
