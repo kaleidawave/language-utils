@@ -236,7 +236,7 @@ where
         &'a self,
         id: Self::FileId,
     ) -> Result<Self::Source, codespan_reporting::files::Error> {
-        Ok(&self.0.sources[id.0 as usize].content)
+        Ok(&self.0.sources[id.0 as usize - 1].content)
     }
 
     // Implementation copied from codespan codebase
