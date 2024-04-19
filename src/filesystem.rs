@@ -146,7 +146,7 @@ impl<M: PathMap> FileSystem for MapFileStore<M> {
 pub struct NoPathMap;
 
 #[derive(Default)]
-pub struct WithPathMap(HashMap<PathBuf, SourceId>);
+pub struct WithPathMap(pub(crate) HashMap<PathBuf, SourceId>);
 
 impl PathMap for NoPathMap {
     fn set_path(&mut self, _path: PathBuf, _source: SourceId) {}
@@ -206,6 +206,10 @@ impl MapFileStore<WithPathMap> {
         } else {
             self.new_source_id(path.to_path_buf(), content);
         }
+    }
+
+    pub fn get_paths(&self) -> &HashMap<PathBuf, SourceId> {
+        &self.mappings.0
     }
 }
 
