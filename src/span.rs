@@ -268,7 +268,7 @@ pub struct LineColumnPosition<T: StringEncoding> {
     pub line: u32,
     pub column: u32,
     pub source: SourceId,
-    encoding: T,
+    pub encoding: T,
 }
 
 impl<T: StringEncoding> LineColumnPosition<T> {
@@ -290,7 +290,7 @@ pub struct LineColumnSpan<T: StringEncoding> {
     pub line_end: u32,
     pub column_end: u32,
     pub source: SourceId,
-    encoding: T,
+    pub encoding: T,
 }
 
 impl<T: StringEncoding> LineColumnSpan<T> {
@@ -364,6 +364,7 @@ impl From<lsp_types::Range> for LineColumnSpan<Utf8> {
             line_end: lsp_range.end.line,
             column_end: lsp_range.end.character,
             encoding: Utf8,
+            // TODO not great
             source: SourceId::NULL,
         }
     }

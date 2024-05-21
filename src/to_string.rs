@@ -28,6 +28,10 @@ pub trait ToString {
     }
 
     fn characters_on_current_line(&self) -> u32;
+
+    fn is_counting(&self) -> bool {
+        false
+    }
 }
 
 // TODO clarify calls
@@ -203,6 +207,10 @@ impl ToString for StringWithOptionalSourceMap {
     fn characters_on_current_line(&self) -> u32 {
         self.since_new_line
     }
+
+    fn is_counting(&self) -> bool {
+        self.quit_after.is_some()
+    }
 }
 
 /// Counts text until a limit. Used for telling whether the text is greater than some threshold
@@ -247,6 +255,9 @@ impl ToString for Counter {
     fn characters_on_current_line(&self) -> u32 {
         // TODO?
         0
+    }
+    fn is_counting(&self) -> bool {
+        true
     }
 }
 

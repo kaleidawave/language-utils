@@ -111,11 +111,6 @@ pub trait FileSystem: Sized {
     {
         self.get_source_by_id(source_id, |s| s.content.get(indexer).map(|v| v.to_owned()))
     }
-
-    #[cfg(feature = "codespan-reporting")]
-    fn into_code_span_store(&self) -> CodeSpanStore<Self> {
-        CodeSpanStore(self)
-    }
 }
 
 impl<M: PathMap> FileSystem for MapFileStore<M> {
@@ -151,7 +146,7 @@ impl<M: PathMap> FileSystem for MapFileStore<M> {
 pub struct NoPathMap;
 
 #[derive(Default)]
-pub struct WithPathMap(HashMap<PathBuf, SourceId>);
+pub struct WithPathMap(pub(crate) HashMap<PathBuf, SourceId>);
 
 impl PathMap for NoPathMap {
     fn set_path(&mut self, _path: PathBuf, _source: SourceId) {}
@@ -212,17 +207,30 @@ impl MapFileStore<WithPathMap> {
             self.new_source_id(path.to_path_buf(), content);
         }
     }
+
+    pub fn get_paths(&self) -> &HashMap<PathBuf, SourceId> {
+        &self.mappings.0
+    }
+}
+
+impl<T: PathMap> MapFileStore<T> {
+    #[cfg(feature = "codespan-reporting")]
+    pub fn into_code_span_store(&self) -> CodeSpanStore<T> {
+        CodeSpanStore(self)
+    }
 }
 
 #[cfg(feature = "codespan-reporting")]
-pub struct CodeSpanStore<'a, T: FileSystem>(&'a T);
+pub struct CodeSpanStore<'a, T>(&'a MapFileStore<T>);
 
 #[cfg(feature = "codespan-reporting")]
-impl<'a, T: FileSystem> codespan_reporting::files::Files<'a> for CodeSpanStore<'a, T> {
+impl<'a, T> codespan_reporting::files::Files<'a> for CodeSpanStore<'a, T>
+where
+    T: PathMap,
+{
     type FileId = SourceId;
     type Name = String;
-    // TODO should just be &str
-    type Source = String;
+    type Source = &'a str;
 
     fn name(&'a self, id: Self::FileId) -> Result<Self::Name, codespan_reporting::files::Error> {
         Ok(self.0.get_file_path(id).display().to_string())
@@ -232,7 +240,7 @@ impl<'a, T: FileSystem> codespan_reporting::files::Files<'a> for CodeSpanStore<'
         &'a self,
         id: Self::FileId,
     ) -> Result<Self::Source, codespan_reporting::files::Error> {
-        Ok(self.0.get_file_content(id))
+        Ok(&self.0.sources[id.0 as usize - 1].content)
     }
 
     // Implementation copied from codespan codebase
